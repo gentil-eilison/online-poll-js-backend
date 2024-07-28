@@ -12,3 +12,24 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Poll {
+  id Int @id @default(autoincrement())
+  title String @unique
+  total_votes Int @default(0)
+  poll_options PollOption[]
+  users User[]
+}
+
+model PollOption {
+  id Int @id @default(autoincrement())
+  votes_count Int @default(0)
+  poll Poll @relation(fields: [poll_id], references: [id])
+  poll_id Int
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  username String @unique
+  polls Poll[]
+}
