@@ -23,9 +23,11 @@ model Poll {
 
 model PollOption {
   id Int @id @default(autoincrement())
+  text String
   votes_count Int @default(0)
   poll Poll @relation(fields: [poll_id], references: [id])
   poll_id Int
+  @@unique([text, poll_id])
 }
 
 model User {

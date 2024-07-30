@@ -1,4 +1,4 @@
-import { Prisma, User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import PrismaService from "../services/PrismaClient.service";
 import HttpResponse from "../../utils/HttpResponse";
