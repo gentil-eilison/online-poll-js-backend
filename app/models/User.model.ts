@@ -1,15 +1,12 @@
 import { Prisma } from "@prisma/client";
-import { PrismaClient } from "@prisma/client";
-import PrismaService from "../services/PrismaClient.service";
 import HttpResponse from "../../utils/HttpResponse";
+import ModelClient from "./ModelClient.model";
 
 type UserData = {
     username: string
 }
 
-class UserDAO {
-    #prisma: PrismaClient = PrismaService.getInstance();
-
+export default class UserModelClient extends ModelClient {
     #validateUserData(userData: UserData) {
         if (userData.username === "") {
             return new HttpResponse(400, {"data": "Username must not be empty"});
@@ -23,7 +20,8 @@ class UserDAO {
             return userValidation;
         }
         try {
-            const user = await this.#prisma.user.create({
+            const prisma = this.getPrisma();
+            const user = await prisma.user.create({
                 data: userData
             });
             return new HttpResponse(200, user);
@@ -39,11 +37,13 @@ class UserDAO {
     }
 
     async getUsers() {
-        return this.#prisma.user.findMany();
+        const prisma = this.getPrisma();
+        return prisma.user.findMany();
     }
 
     async getUserById(userId: number) {
-        const user = await this.#prisma.user.findUnique({
+        const prisma = this.getPrisma();
+        const user = await prisma.user.findUnique({
             where: {
                 id: userId
             }
@@ -56,7 +56,8 @@ class UserDAO {
 
     async deleteUser(userId: number) {
         try {
-            await this.#prisma.user.delete({
+            const prisma = this.getPrisma();
+            await prisma.user.delete({
                 where: {
                     id: userId
                 }
@@ -76,7 +77,8 @@ class UserDAO {
             return userValidation;
         }
         try {
-            const updatedUser = await this.#prisma.user.update({
+            const prisma = this.getPrisma();
+            const updatedUser = await prisma.user.update({
                 where: {
                     id: userId
                 },
@@ -91,5 +93,3 @@ class UserDAO {
         }
     }
 }
-
-export { UserDAO }
