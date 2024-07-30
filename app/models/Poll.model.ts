@@ -1,4 +1,4 @@
-import DAO from "./DAO.model";
+import ModelClient from "./ModelClient.model";
 import PollOptionDAO from "./PollOption.model";
 import { PollOption, Prisma } from "@prisma/client";
 import HttpResponse from "../../utils/HttpResponse";
@@ -8,7 +8,7 @@ type PollData = {
     poll_options: Array<PollOption>
 }
 
-export default class PollDAO extends DAO {
+export default class PollModelClient extends ModelClient {
     #validatePollData(pollData: PollData) {
         if (!pollData.poll_options) {
             return new HttpResponse(400, {"data": "poll_options field is required"});

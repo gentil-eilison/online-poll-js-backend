@@ -1,5 +1,5 @@
 import HttpResponse from "../../utils/HttpResponse";
-import DAO from "./DAO.model";
+import DAO from "./ModelClient.model";
 
 type PollOption = {
     id: number,
