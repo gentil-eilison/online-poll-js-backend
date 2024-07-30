@@ -20,8 +20,16 @@ async function getUsers(request: Request, response: Response) {
     response.status(200).send(users);
 }
 
+async function deleteUser(request: Request, response: Response) {
+    const userDAO = new UserDAO();
+    const userId = Number(request.params.userId);
+    const httpResponse = await userDAO.deleteUser(userId);
+    response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
+}
+
 export {
     getUser, 
     getUsers, 
-    createUser
+    createUser,
+    deleteUser
 }

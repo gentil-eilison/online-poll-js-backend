@@ -42,6 +42,22 @@ class UserDAO {
         }
         return new HttpResponse(200, user);
     }
+
+    async deleteUser(userId: number) {
+        try {
+            await this.#prisma.user.delete({
+                where: {
+                    id: userId
+                }
+            });
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                return new HttpResponse(404, {"data": error.meta?.cause})
+            }
+        }
+
+        return new HttpResponse(204, {});
+    }
 }
 
 export { UserDAO }

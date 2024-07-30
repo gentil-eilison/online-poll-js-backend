@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { getUsers, createUser, getUser } from "../controllers/User.controller";
+import { getUsers, createUser, getUser, deleteUser } from "../controllers/User.controller";
 
 const router: Router = express.Router();
 
@@ -9,5 +9,6 @@ router.route("/")
 
 router.route("/:userId/")
     .get(getUser)
+    .delete(deleteUser)
 
 export default router;
