@@ -1,5 +1,5 @@
 import HttpResponse from "../../utils/HttpResponse";
-import DAO from "./ModelClient.model";
+import ModelClient from "./ModelClient.model";
 
 type PollOption = {
     id: number,
@@ -7,7 +7,7 @@ type PollOption = {
     votes_count: number
 }
 
-export default class PollOptionDAO extends DAO {
+export default class PollOptionModelClient extends ModelClient {
     async getPollOptionByPollId(pollId: number, pollOptionId: number) {
         if (!pollOptionId) {
             return new HttpResponse(400, {"data": "You must provide a poll option ID"});

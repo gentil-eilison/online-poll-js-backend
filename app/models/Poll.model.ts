@@ -1,5 +1,5 @@
 import ModelClient from "./ModelClient.model";
-import PollOptionDAO from "./PollOption.model";
+import PollOptionModelClient from "./PollOption.model";
 import { PollOption, Prisma } from "@prisma/client";
 import HttpResponse from "../../utils/HttpResponse";
 
@@ -103,9 +103,8 @@ export default class PollModelClient extends ModelClient {
         const httpResponse = await this.getPoll(pollId);
         if (httpResponse.getStatusCode() === 200) {
             const poll = httpResponse.getData();
-            console.log(poll);
-            const pollOptionDAO = new PollOptionDAO();
-            const pollOptionHttpResponse = await pollOptionDAO.getPollOptionByPollId(
+            const pollOptionModelClient = new PollOptionModelClient();
+            const pollOptionHttpResponse = await pollOptionModelClient.getPollOptionByPollId(
                 poll.id,
                 pollOptionId
             );
