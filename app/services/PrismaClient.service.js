@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client/extension";
+import { PrismaClient } from "@prisma/client";
 
 export default class PrismaService {
     static #isInternalConstructing = false;
@@ -14,7 +14,7 @@ export default class PrismaService {
     static getInstance() {
         if (this.#instance === null) {
             this.#isInternalConstructing = true;
-            this.#instance = new PrismaClient();
+            this.#instance = new PrismaClient({ errorFormat: 'minimal' });
         }
         return this.#instance;
     }
