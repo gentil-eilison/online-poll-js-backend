@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import PrismaService from "../services/PrismaClient.service";
 import HttpResponse from "../../utils/HttpResponse";
@@ -10,7 +10,18 @@ type UserData = {
 class UserDAO {
     #prisma: PrismaClient = PrismaService.getInstance();
 
+    #validateUserData(userData: UserData) {
+        if (userData.username === "") {
+            return new HttpResponse(400, {"data": "Username must not be empty"});
+        }
+        return null;
+    }
+
     async createUser(userData: UserData) {
+        const userValidation = this.#validateUserData(userData);
+        if (userValidation) {
+            return userValidation;
+        }
         try {
             const user = await this.#prisma.user.create({
                 data: userData
@@ -57,6 +68,27 @@ class UserDAO {
         }
 
         return new HttpResponse(204, {});
+    }
+
+    async updateUser(userId: number, userData: UserData) {
+        const userValidation = this.#validateUserData(userData);
+        if (userValidation) {
+            return userValidation;
+        }
+        try {
+            const updatedUser = await this.#prisma.user.update({
+                where: {
+                    id: userId
+                },
+                data: userData
+            });
+            return new HttpResponse(200, updatedUser);
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                return new HttpResponse(404, {"data": error.meta?.cause})
+            }
+            return new HttpResponse(500, {"data": "Server error"});
+        }
     }
 }
 

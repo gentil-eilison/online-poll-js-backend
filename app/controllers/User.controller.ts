@@ -27,9 +27,17 @@ async function deleteUser(request: Request, response: Response) {
     response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
 }
 
+async function updateUser(request: Request, response: Response) {
+    const userDAO = new UserDAO();
+    const userId = Number(request.params.userId);
+    const httpResponse = await userDAO.updateUser(userId, request.body);
+    response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
+}
+
 export {
     getUser, 
     getUsers, 
     createUser,
-    deleteUser
+    deleteUser,
+    updateUser
 }
