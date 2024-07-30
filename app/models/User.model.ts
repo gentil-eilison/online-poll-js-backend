@@ -85,7 +85,7 @@ class UserDAO {
             return new HttpResponse(200, updatedUser);
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                return new HttpResponse(404, {"data": error.meta?.cause})
+                return new HttpResponse(400, {"data": error.meta?.cause})
             }
             return new HttpResponse(500, {"data": "Server error"});
         }

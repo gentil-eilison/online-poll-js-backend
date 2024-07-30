@@ -1,4 +1,5 @@
 import DAO from "./DAO.model";
+import PollOptionDAO from "./PollOption.model";
 import { PollOption, Prisma } from "@prisma/client";
 import HttpResponse from "../../utils/HttpResponse";
 
@@ -62,10 +63,77 @@ export default class PollDAO extends DAO {
                 poll_options: true
             }
         });
-        
+
         if (!poll) {
             return new HttpResponse(404, {"data": "Not found"});
         }
         return new HttpResponse(200, poll);
+    }
+
+    async updatePollTotalVotes(pollId: number) {
+        const httpResponse = await this.getPoll(pollId);
+        if (httpResponse.getStatusCode() == 200) {
+            const prisma = this.getPrisma();
+            const poll = httpResponse.getData();
+            let total_votes = 0
+            poll.poll_options.forEach((option: PollOption) => {
+                total_votes += option.votes_count;
+            })
+
+            try {
+                const pollUpdate = await prisma.poll.update({
+                    where: {
+                        id: pollId
+                    },
+                    data: {
+                        total_votes
+                    }
+                });
+                return new HttpResponse(200, pollUpdate);
+            } catch (error) {
+                if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                    return new HttpResponse(400, {"data": error.meta?.cause});
+                }
+                return new HttpResponse(500, {"data": "Server error"});
+            }
+        }
+    }
+
+    async votePoll(pollId: number, pollOptionId: number) {
+        const httpResponse = await this.getPoll(pollId);
+        if (httpResponse.getStatusCode() === 200) {
+            const poll = httpResponse.getData();
+            console.log(poll);
+            const pollOptionDAO = new PollOptionDAO();
+            const pollOptionHttpResponse = await pollOptionDAO.getPollOptionByPollId(
+                poll.id,
+                pollOptionId
+            );
+
+            if (pollOptionHttpResponse.getStatusCode() == 200) {
+                const prisma = this.getPrisma();
+                const pollOption = pollOptionHttpResponse.getData();
+                try {
+                    const pollUpdated = await prisma.pollOption.update({
+                        where: {
+                            id: pollOptionId,
+                        },
+                        data: {
+                            votes_count: pollOption.votes_count + 1
+                        }
+                    });
+                    this.updatePollTotalVotes(poll.id);
+                    return new HttpResponse(200, pollUpdated);
+                } catch (error) {
+                    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                        return new HttpResponse(400, {"data": error.meta?.cause});
+                    }
+                    return new HttpResponse(500, {"data": "Server error"});
+                }
+            }
+            return pollOptionHttpResponse;
+        } else {
+            return httpResponse;
+        }
     }
 }

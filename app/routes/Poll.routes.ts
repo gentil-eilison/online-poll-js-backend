@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 
-import { createPoll, getPolls, getPoll } from "../controllers/Poll.controller";
+import { createPoll, getPolls, getPoll, votePoll } from "../controllers/Poll.controller";
 
 const router: Router = express.Router();
 
@@ -10,5 +10,7 @@ router.route("/")
 
 router.route("/:pollId/")
     .get(getPoll)
+
+router.post("/:pollId/vote/", votePoll)
 
 export default router;

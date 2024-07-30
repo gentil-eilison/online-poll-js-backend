@@ -20,4 +20,12 @@ async function getPoll(request: Request, response: Response) {
     response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
 }
 
-export { createPoll, getPolls, getPoll }
+async function votePoll(request: Request, response: Response) {
+    const pollDAO = new PollDAO();
+    const pollId = Number(request.params.pollId);
+    const pollOptionId = Number(request.body.poll_option);
+    const httpResponse = await pollDAO.votePoll(pollId, pollOptionId);
+    response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
+}
+
+export { createPoll, getPolls, getPoll, votePoll }

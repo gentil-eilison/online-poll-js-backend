@@ -1,8 +1,8 @@
 export default class HttpResponse {
     #statusCode: number;
-    #data: object;
+    #data: any;
 
-    constructor(statusCode: number, data: object) {
+    constructor(statusCode: number, data: any) {
         this.#statusCode = statusCode;
         this.#data = data;
     }
