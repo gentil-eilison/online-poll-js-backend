@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 export default class PrismaService {
     static #isInternalConstructing = false;
-    static #instance = null;
+    static #instance: PrismaClient|null = null;
 
     constructor() {
         if (!PrismaService.#isInternalConstructing) {

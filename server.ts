@@ -1,8 +1,8 @@
-import express from "express";
+import express, { Express, Request, Response } from "express";
 import { createServer } from "node:http";
-import usersRoutes from "./app/routes/User.routes.js";
+import usersRoutes from "./app/routes/User.routes";
 
-const app = express();
+const app: Express = express();
 const server = createServer(app);
 
 app.use(express.json());
