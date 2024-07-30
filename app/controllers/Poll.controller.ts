@@ -13,4 +13,11 @@ async function getPolls(request: Request, response: Response) {
     response.status(200).send(polls);
 }
 
-export { createPoll, getPolls }
+async function getPoll(request: Request, response: Response) {
+    const pollDAO = new PollDAO();
+    const pollId = Number(request.params.pollId);
+    const httpResponse = await pollDAO.getPoll(pollId);
+    response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
+}
+
+export { createPoll, getPolls, getPoll }

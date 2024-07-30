@@ -49,6 +49,23 @@ export default class PollDAO extends DAO {
 
     async getPolls() {
         const prisma = this.getPrisma();
-        return prisma.poll.findMany();
+        return prisma.poll.findMany({ include: { poll_options: true } });
+    }
+
+    async getPoll(pollId: number) {
+        const prisma = this.getPrisma();
+        const poll = await prisma.poll.findUnique({
+            where: {
+                id: pollId
+            },
+            include: {
+                poll_options: true
+            }
+        });
+        
+        if (!poll) {
+            return new HttpResponse(404, {"data": "Not found"});
+        }
+        return new HttpResponse(200, poll);
     }
 }
