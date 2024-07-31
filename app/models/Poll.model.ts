@@ -1,5 +1,6 @@
 import ModelClient from "./ModelClient.model";
 import PollOptionModelClient from "./PollOption.model";
+import UserModelClient from "./User.model";
 import { PollOption, Prisma } from "@prisma/client";
 import HttpResponse from "../../utils/HttpResponse";
 
@@ -21,6 +22,26 @@ export default class PollModelClient extends ModelClient {
             return new HttpResponse(400, {"data": "Poll title must not be empty"});
         }
         return null;
+    }
+
+    async hasUserVotedInPoll(pollId: number, userId: number) {
+        const prisma = this.getPrisma();
+        const poll = await prisma.poll.findUnique({
+            where: {
+                id: pollId
+            },
+            include: {
+                users: {
+                    where: {
+                        id: userId
+                    }
+                }
+            }
+        });
+        if (poll?.users.length !== 0) {
+            return true;
+        }
+        return false;
     }
 
     async createPoll(pollData: PollData) {
@@ -60,7 +81,8 @@ export default class PollModelClient extends ModelClient {
                 id: pollId
             },
             include: {
-                poll_options: true
+                poll_options: true,
+                users: true
             }
         });
 
@@ -68,6 +90,31 @@ export default class PollModelClient extends ModelClient {
             return new HttpResponse(404, {"data": "Not found"});
         }
         return new HttpResponse(200, poll);
+    }
+
+    async updatePollUsers(pollId: number, userId: number) {
+        const httpResponse = await this.getPoll(pollId);
+        if (httpResponse.getStatusCode() == 200) {
+            const prisma = this.getPrisma();
+            try {
+                const pollUpdate = await prisma.poll.update({
+                    where: {
+                        id: pollId
+                    },
+                    data: {
+                        users: {
+                            connect: {id: userId}
+                        }
+                    }
+                });
+                return new HttpResponse(200, pollUpdate);
+            } catch (error) {
+                if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                    return new HttpResponse(400, {"data": error.meta?.cause});
+                }
+                return new HttpResponse(500, {"data": "Server error"});
+            }
+        }
     }
 
     async updatePollTotalVotes(pollId: number) {
@@ -99,38 +146,54 @@ export default class PollModelClient extends ModelClient {
         }
     }
 
-    async votePoll(pollId: number, pollOptionId: number) {
+    async votePoll(pollId: number, pollOptionId: number, userId: number) {
         const httpResponse = await this.getPoll(pollId);
         if (httpResponse.getStatusCode() === 200) {
-            const poll = httpResponse.getData();
-            const pollOptionModelClient = new PollOptionModelClient();
-            const pollOptionHttpResponse = await pollOptionModelClient.getPollOptionByPollId(
-                poll.id,
-                pollOptionId
-            );
+            const userModelClient = new UserModelClient();
+            const userHttpResponse = await userModelClient.getUserById(userId);
 
-            if (pollOptionHttpResponse.getStatusCode() == 200) {
-                const prisma = this.getPrisma();
-                const pollOption = pollOptionHttpResponse.getData();
-                try {
-                    const pollUpdated = await prisma.pollOption.update({
-                        where: {
-                            id: pollOptionId,
-                        },
-                        data: {
-                            votes_count: pollOption.votes_count + 1
-                        }
-                    });
-                    this.updatePollTotalVotes(poll.id);
-                    return new HttpResponse(200, pollUpdated);
-                } catch (error) {
-                    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                        return new HttpResponse(400, {"data": error.meta?.cause});
-                    }
-                    return new HttpResponse(500, {"data": "Server error"});
+            if (userHttpResponse.getStatusCode() === 200) {
+                const poll = httpResponse.getData();
+                const user = userHttpResponse.getData();
+
+                const hasUserVotedInPoll = await this.hasUserVotedInPoll(poll.id, user.id);
+
+                if (hasUserVotedInPoll) {
+                    return new HttpResponse(400, {"data": "You've already votted in this poll"});
                 }
+                
+                const pollOptionModelClient = new PollOptionModelClient();
+                const pollOptionHttpResponse = await pollOptionModelClient.getPollOptionByPollId(
+                    poll.id,
+                    pollOptionId
+                );
+    
+                if (pollOptionHttpResponse.getStatusCode() == 200) {
+                    const prisma = this.getPrisma();
+                    const pollOption = pollOptionHttpResponse.getData();
+                    try {
+                        const pollUpdated = await prisma.pollOption.update({
+                            where: {
+                                id: pollOptionId,
+                            },
+                            data: {
+                                votes_count: pollOption.votes_count + 1
+                            }
+                        });
+                        this.updatePollTotalVotes(poll.id);
+                        this.updatePollUsers(poll.id, userId);
+                        return new HttpResponse(200, pollUpdated);
+                    } catch (error) {
+                        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                            return new HttpResponse(400, {"data": error.meta?.cause});
+                        }
+                        return new HttpResponse(500, {"data": "Server error"});
+                    }
+                }
+                return pollOptionHttpResponse;
+            } else {
+                return userHttpResponse;
             }
-            return pollOptionHttpResponse;
         } else {
             return httpResponse;
         }

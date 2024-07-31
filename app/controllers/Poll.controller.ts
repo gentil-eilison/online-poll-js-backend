@@ -24,7 +24,8 @@ async function votePoll(request: Request, response: Response) {
     const pollModelClient = new PollModelClient();
     const pollId = Number(request.params.pollId);
     const pollOptionId = Number(request.body.poll_option);
-    const httpResponse = await pollModelClient.votePoll(pollId, pollOptionId);
+    const userId = Number(request.body.user_id);
+    const httpResponse = await pollModelClient.votePoll(pollId, pollOptionId, userId);
     response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
 }
 
