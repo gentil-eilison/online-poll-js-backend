@@ -1,12 +1,6 @@
 import HttpResponse from "../../utils/HttpResponse";
 import ModelClient from "./ModelClient.model";
 
-type PollOption = {
-    id: number,
-    text: string,
-    votes_count: number
-}
-
 export default class PollOptionModelClient extends ModelClient {
     async getPollOptionByPollId(pollId: number, pollOptionId: number) {
         if (!pollOptionId) {

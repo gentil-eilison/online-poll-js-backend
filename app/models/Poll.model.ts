@@ -65,6 +65,9 @@ export default class PollModelClient extends ModelClient {
             if (error instanceof Prisma.PrismaClientValidationError) {
                 return new HttpResponse(400, {"data": "Poll option text and Poll title are required"});
             }
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                return new HttpResponse(400, {"data": "Poll title must be unqiue"});
+            }
             return new HttpResponse(500, {"data": "Server error"});
         }
     }

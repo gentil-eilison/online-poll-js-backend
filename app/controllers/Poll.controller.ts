@@ -1,9 +1,13 @@
 import { Request, Response } from "express";
 import PollModelClient from "../models/Poll.model";
+import { getUpdatedPolls } from "../events/Poll.events";
 
 async function createPoll(request: Request, response: Response) {
     const pollModelClient = new PollModelClient();
     const httpResponse = await pollModelClient.createPoll(request.body);
+    if (httpResponse.getStatusCode() === 201) {
+        await getUpdatedPolls();
+    }
     response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
 }
 
