@@ -175,7 +175,7 @@ export default class PollModelClient extends ModelClient {
                     const prisma = this.getPrisma();
                     const pollOption = pollOptionHttpResponse.getData();
                     try {
-                        const pollUpdated = await prisma.pollOption.update({
+                        await prisma.pollOption.update({
                             where: {
                                 id: pollOptionId,
                             },
@@ -185,7 +185,8 @@ export default class PollModelClient extends ModelClient {
                         });
                         this.updatePollTotalVotes(poll.id);
                         this.updatePollUsers(poll.id, userId);
-                        return new HttpResponse(200, pollUpdated);
+                        const updatedPollResponse = await this.getPoll(pollId);
+                        return new HttpResponse(200, updatedPollResponse.getData());
                     } catch (error) {
                         if (error instanceof Prisma.PrismaClientKnownRequestError) {
                             return new HttpResponse(400, {"data": error.meta?.cause});

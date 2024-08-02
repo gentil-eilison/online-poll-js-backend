@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import PollModelClient from "../models/Poll.model";
 import { getUpdatedPolls } from "../events/Poll.events";
+import { io } from "../../server";
 
 async function createPoll(request: Request, response: Response) {
     const pollModelClient = new PollModelClient();
@@ -30,6 +31,10 @@ async function votePoll(request: Request, response: Response) {
     const pollOptionId = Number(request.body.poll_option);
     const userId = Number(request.body.user_id);
     const httpResponse = await pollModelClient.votePoll(pollId, pollOptionId, userId);
+    if (httpResponse.getStatusCode() === 200) {
+        const poll = httpResponse.getData();
+        io.to(poll.title).emit("updatePollVotes", poll);
+    }
     response.status(httpResponse.getStatusCode()).send(httpResponse.getData());
 }
 

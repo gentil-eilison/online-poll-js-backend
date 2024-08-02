@@ -22,9 +22,23 @@ app.use("/polls", pollRoutes);
 
 io.on("connection", (socket) => {
     console.log("a user connected");
+
+    socket.on("disconnect", () => {
+        console.log("socket disconnected");
+    });
+
+    socket.on("joinPoll", (pollName: string) => {
+        socket.join(pollName);
+        console.log("user has joined poll '"  + pollName + "' room");
+    });
+
+    socket.on("leavePoll", (pollName: string) => {
+        socket.leave(pollName);
+        console.log("user has left poll '" + pollName + "' room");
+    });
 });
 
-server.listen(3000, "192.168.0.102",() => {
+server.listen(3000, "192.168.0.105",() => {
     console.log("Server listening on port 3000");
 });
 
